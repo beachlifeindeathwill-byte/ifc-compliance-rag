@@ -126,5 +126,6 @@ npm run build
 如果希望他人在明确条款下复用或修改项目，发布前应补充许可证文件。
 
 <img width="1293" height="913" alt="18a8c5f4-5e17-442f-95e9-8662009bbbf2" src="https://github.com/user-attachments/assets/7177550c-18ac-4c0a-9c3e-37edb3034e3a" />
-![Uploading 8b0bb1a0-618a-4070-9c41-6fc50574513d.png…]()
+<img width="1293" height="913" alt="8b0bb1a0-618a-4070-9c41-6fc50574513d" src="https://github.com/user-attachments/assets/55e6c184-e3b1-40c6-9058-bc914af34e25" />
+
 
