@@ -1,4 +1,3 @@
-<img width="1293" height="913" alt="8b0bb1a0-618a-4070-9c41-6fc50574513d" src="https://github.com/user-attachments/assets/a1fe1a5f-cdea-4c78-9315-948d60785b7b" />
 # 建筑消防规范审查系统 RAG
 
 本项目是一套面向建筑消防规范审查场景的 RAG 原型系统。系统围绕消防规范检索、BIM/IFC 模型事实解析、证据展示和分层评估展开，用于辅助完成规范问答、模型字段核对和消防合规审查准备。
