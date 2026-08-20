@@ -1,0 +1,45 @@
+{
+  "version": "retrieval_config_v1",
+  "updated_at": "2026-08-04",
+  "current_state": {
+    "vector_store_built": true,
+    "storage": "data/processed_text/chunks.jsonl",
+    "active_evaluation": "BM25 + FAISS bge-m3 hybrid retrieval + policy routing + local reranker v0",
+    "note": "当前已落盘正式 FAISS，provider 是 siliconflow，embedding model 是 BAAI/bge-m3。SiliconFlow rerank API 已封装为可选开关，但中文小样本测试排序异常，默认不启用。"
+  },
+  "planned_hybrid_retrieval": {
+    "stage_1_recall": {
+      "bm25_top_k": 80,
+      "vector_top_k": 40,
+      "fusion": "bm25_dominant_weighted_fusion",
+      "target_candidate_count": 80,
+      "ratio_explanation": "召回阶段 BM25:Vector 约 2:1。BM25 保证条文号、数值、标准名精确命中；向量检索补充语义相近问题。"
+    },
+    "stage_2_policy_filtering": {
+      "standard_routing": true,
+      "metadata_boost": true,
+      "abolished_article_warning": true,
+      "target_candidate_count": 30
+    },
+    "stage_3_rerank": {
+      "provider": "siliconflow",
+      "model": "BAAI/bge-reranker-v2-m3",
+      "input_top_k": 30,
+      "output_top_k": 8,
+      "answer_context_top_k": 5,
+      "default_enabled": false,
+      "note": "API rerank 需通过中文评估验证后启用；当前默认使用本地 reranker v0。"
+    },
+    "stage_4_answer": {
+      "must_show_sources": true,
+      "must_show_policy_reason": true,
+      "must_warn_deprecated_articles": true
+    }
+  },
+  "fallback_when_no_vector_store": {
+    "bm25_top_k": 50,
+    "policy_candidate_count": 30,
+    "local_rerank_top_k": 8,
+    "answer_context_top_k": 5
+  }
+}

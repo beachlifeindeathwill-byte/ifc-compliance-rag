@@ -1,0 +1,90 @@
+{
+  "version": "policy_v1_seed",
+  "updated_at": "2026-08-11",
+  "notes": "用于多规范 RAG 的适用性路由、优先级排序和冲突提示。priority 越高，冲突时越应优先核验。",
+  "standards": {
+    "GB 55038-2025": {
+      "title": "住宅项目规范",
+      "file": "GB 55038-2025_official_excerpt.pdf",
+      "category": "住宅项目通用规范",
+      "effective_date": "2025-05-01",
+      "is_mandatory_full_text": true,
+      "priority": 110,
+      "route_bonus": 35,
+      "role": "governing_residential_code",
+      "scope_keywords": ["住宅项目", "住宅建筑", "新建住宅", "既有住宅", "户门", "套内空间", "公共空间", "居住环境"],
+      "aliases": ["GB 55038", "GB55038", "住宅项目规范", "住宅新规"]
+    },
+    "GB 55037-2022": {
+      "title": "建筑防火通用规范",
+      "file": "GB 55037-2022.pdf",
+      "category": "建筑防火通用规范",
+      "effective_date": "2023-06-01",
+      "is_mandatory_full_text": true,
+      "priority": 100,
+      "route_bonus": 22,
+      "role": "governing_general_code",
+      "scope_keywords": ["建筑防火", "通用规范", "通用要求", "耐火等级", "防火分隔", "防火墙", "防火隔墙", "安全疏散", "疏散出口", "疏散照明", "避难", "消防救援", "消防车道", "消防救援设施", "消防设施与器材"],
+      "aliases": ["GB 55037", "GB55037", "建筑防火通用规范", "防火通规"]
+    },
+    "GB 55036-2022": {
+      "title": "消防设施通用规范",
+      "file": "GB 55036-2022.pdf",
+      "category": "消防设施通用规范",
+      "effective_date": "2023-03-01",
+      "is_mandatory_full_text": true,
+      "priority": 90,
+      "role": "governing_facility_code",
+      "scope_keywords": ["消防设施", "消防给水", "消火栓", "自动喷水", "灭火系统", "火灾自动报警", "消防应急照明", "灭火器", "防烟排烟"],
+      "aliases": ["GB 55036", "GB55036", "消防设施通用规范", "设施通规"]
+    },
+    "GB 50067-2014": {
+      "title": "汽车库、修车库、停车场设计防火规范",
+      "file": "GB 50067-2014.pdf",
+      "category": "专项设计规范",
+      "effective_date": "2015-08-01",
+      "is_mandatory_full_text": false,
+      "priority": 40,
+      "role": "specialized_legacy_code",
+      "scope_keywords": ["汽车库", "修车库", "停车场", "停车数量", "汽车疏散出口"],
+      "aliases": ["GB 50067", "GB50067", "汽车库防火规范", "车库规范"]
+    },
+    "GB 50016-2014": {
+      "title": "建筑设计防火规范",
+      "file": "GB 50016-2014.pdf",
+      "category": "设计防火规范",
+      "effective_date": "2015-05-01",
+      "is_mandatory_full_text": false,
+      "priority": 30,
+      "role": "legacy_design_code",
+      "scope_keywords": ["建筑设计防火", "厂房", "仓库", "民用建筑", "公共建筑", "疏散楼梯", "防火分区", "消防电梯"],
+      "aliases": ["GB 50016", "GB50016", "建筑设计防火规范", "建规"]
+    }
+  },
+  "routing_rules": [
+    {
+      "id": "explicit_standard_alias",
+      "description": "问题中明确出现标准号或标准名称时，优先该标准。"
+    },
+    {
+      "id": "residential_project_code",
+      "description": "住宅项目、户门和套内空间问题优先检索 GB 55038-2025，并按问题内容辅助核验建筑防火通用规范。"
+    },
+    {
+      "id": "general_fire_code",
+      "description": "问题包含建筑防火通用规范、通用要求、基本目标等表达时，优先 GB 55037-2022。"
+    },
+    {
+      "id": "facility_code",
+      "description": "问题集中在消防设施系统时，优先 GB 55036-2022。"
+    },
+    {
+      "id": "garage_special_code",
+      "description": "问题集中在汽车库、修车库、停车场时，优先 GB 50067-2014，同时校核 GB 55037-2022 是否有更高优先级要求。"
+    },
+    {
+      "id": "legacy_design_code",
+      "description": "问题为具体建筑设计防火细节且未触发通用规范时，可检索 GB 50016-2014，但必须检查条文是否被通用规范废止。"
+    }
+  ]
+}

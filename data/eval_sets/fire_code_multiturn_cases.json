@@ -1,0 +1,69 @@
+{
+  "version": "multiturn_seed_v1",
+  "note": "当前 v2 UI 仍以独立单轮问答为主；本文件用于后续验收多轮上下文、追问、纠正和跨条款综合能力。",
+  "cases": [
+    {
+      "id": "MTA",
+      "name": "追问型",
+      "goal": "考察指代消解、建筑类型保持和检查项切换。",
+      "turns": [
+        {"round": 1, "question": "高层公共建筑疏散楼梯的最小净宽是多少？", "expected_context": {"topic": "疏散楼梯净宽", "building_type": "高层公共建筑"}, "expected_article": "5.5.18"},
+        {"round": 2, "question": "那如果是医疗建筑呢？", "expected_context": {"topic": "疏散楼梯净宽", "building_type": "高层医疗建筑"}, "expected_article": "5.5.18"},
+        {"round": 3, "question": "这个数值和单多层建筑相比有变化吗？", "expected_context": {"topic": "疏散楼梯净宽", "compare_with": "单多层建筑"}, "expected_article": "5.5.18"},
+        {"round": 4, "question": "刚才提到的医疗建筑，其疏散门净宽要求是多少？", "expected_context": {"topic": "疏散门净宽", "building_type": "医疗建筑"}, "expected_article": "5.5.18"}
+      ]
+    },
+    {
+      "id": "MTB",
+      "name": "数值计算型",
+      "goal": "考察专项场景、倍数计算、面积分区数量和依据回溯。",
+      "turns": [
+        {"round": 1, "question": "地下汽车库防火分区最大允许面积是多少？", "expected_context": {"topic": "防火分区面积", "building_type": "地下汽车库"}, "expected_standard_id": "GB 50067-2014"},
+        {"round": 2, "question": "如果设置了自动灭火系统，这个面积可以增加到多少？", "expected_context": {"calculation": "自动灭火系统倍数"}, "expected_behavior": "must_show_base_value_and_multiplier"},
+        {"round": 3, "question": "那我现在有一个4000㎡的地下汽车库，需要分成几个防火分区？", "expected_context": {"calculation": "ceil(total_area / allowed_area)"}, "expected_behavior": "must_show_formula"},
+        {"round": 4, "question": "刚才的计算结果，规范依据是哪一条？", "expected_context": {"must_refer_previous_calculation": true}, "expected_behavior": "must_back_reference_article"}
+      ]
+    },
+    {
+      "id": "MTC",
+      "name": "否定修正型",
+      "goal": "考察纠错、同一场景切换检查项和长距离回溯。",
+      "turns": [
+        {"round": 1, "question": "疏散走道的净宽要求是多少？", "expected_context": {"topic": "疏散走道净宽"}},
+        {"round": 2, "question": "不对，我问的是高层医疗建筑的疏散走道。", "expected_context": {"topic": "疏散走道净宽", "building_type": "高层医疗建筑", "correction": true}},
+        {"round": 3, "question": "那疏散楼梯呢？", "expected_context": {"topic": "疏散楼梯净宽", "building_type": "高层医疗建筑"}},
+        {"round": 4, "question": "回到第一个问题，普通高层公共建筑的疏散走道净宽。", "expected_context": {"topic": "疏散走道净宽", "building_type": "高层公共建筑", "long_range_reference": true}}
+      ]
+    },
+    {
+      "id": "MTD",
+      "name": "跨文档跨条款型",
+      "goal": "考察防火分区、自动扶梯防火分隔和疏散要求之间的综合推断。",
+      "turns": [
+        {"round": 1, "question": "防火分区面积在高层民用建筑中的规定是什么？", "expected_article": "5.3.1"},
+        {"round": 2, "question": "如果该建筑还设有自动扶梯，防火分区应如何划分？", "expected_behavior": "must_retrieve_related_fire_separation_article"},
+        {"round": 3, "question": "这种情况下，疏散楼梯的数量有额外要求吗？", "expected_behavior": "must_state_if_evidence_missing_or_needs_more_conditions"}
+      ]
+    },
+    {
+      "id": "MTE",
+      "name": "跨主题回溯依据",
+      "goal": "考察用户主动回到旧主题并追问上一轮数值依据时，能否选择对应证据而不是沿用最近无关主题。",
+      "turns": [
+        {"round": 1, "question": "地下汽车库设置自动灭火系统时，疏散距离可以到多少？", "expected_standard_id": "GB 50067-2014", "expected_article": "6.0.6"},
+        {"round": 2, "question": "建筑高度大于100m的民用建筑，楼板耐火极限是多少？", "expected_standard_id": "GB 50016-2014", "expected_article": "5.1.4"},
+        {"round": 3, "question": "回到汽车库，刚才的 60m 来自哪一条？", "expected_standard_id": "GB 50067-2014", "expected_article": "6.0.6"}
+      ]
+    },
+    {
+      "id": "MTF",
+      "name": "单轮插入与主题切换",
+      "goal": "考察用户在追问链路中间插入独立单轮问题后，是否能切走再切回原主题，且不被中间问题污染。",
+      "turns": [
+        {"round": 1, "question": "商业综合体疏散楼梯的最小净宽是多少？", "expected_article": "5.5.18"},
+        {"round": 2, "question": "建筑高度大于100m的民用建筑，楼板耐火极限是多少？", "expected_standard_id": "GB 50016-2014", "expected_article": "5.1.4"},
+        {"round": 3, "question": "回到商业综合体，疏散走道净宽是多少？", "expected_article": "5.5.18"}
+      ]
+    }
+  ]
+}

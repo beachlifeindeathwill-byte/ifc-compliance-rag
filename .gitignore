@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.venv/
+.tmp/
+
+# Node build/runtime
+web/node_modules/
+web/dist/
+web/.openai/
+
+# Large or regenerable knowledge assets
+data/vectorstore/
+data/raw_pdfs/
+data/source_archive/
+data/ifc_uploads/
+data/chunks_audit/
+data/processed_text/
+data/structured_tables/
+data/retrieval_runs/
+data/server_*.log
+
+# Local visual review artifacts
+web/design-qa.md
+web/implementation*.png
+
+# Local iteration notes
+docs/rag_iteration_change_log.md

@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+numpy
+faiss-cpu
+ifcopenshell
+pdfplumber
+pypdf

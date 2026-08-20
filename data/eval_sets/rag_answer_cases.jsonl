@@ -1,0 +1,8 @@
+{"id":"ANS_001","question":"建筑高度大于100m的民用建筑，楼板耐火极限不应低于多少小时？","expected_can_answer":true,"required_claims":[{"all_of":["100m","2.00h"],"standard_id":"GB 50016-2014","article":"5.1.4"}],"forbidden":["无法可靠回答"]}
+{"id":"ANS_002","question":"地下汽车库设置自动灭火系统时，室内任一点至最近人员安全出口的疏散距离可以到多少？","expected_can_answer":true,"required_claims":[{"all_of":["自动灭火系统","60m"],"standard_id":"GB 55037-2022","article":"7.1.18"}],"forbidden":["75m","56.25m"]}
+{"id":"ANS_003","question":"新建住宅的户门通行净宽最低是多少？","expected_can_answer":true,"required_claims":[{"all_of":["新建","0.90m"],"standard_id":"GB 55038-2025","article":"4.1.14"}],"forbidden":["新建住宅户门通行净宽不应小于0.80m"]}
+{"id":"ANS_004","question":"既有住宅改造时，户门通行净宽最低是多少？","expected_can_answer":true,"required_claims":[{"all_of":["既有","0.80m"],"standard_id":"GB 55038-2025","article":"4.1.14"}],"forbidden":["既有住宅改造户门通行净宽不应小于0.90m"]}
+{"id":"ANS_005","question":"这个门通行净宽0.82m，合规吗？","expected_can_answer":false,"required_claims":[{"any_of":["用途","部位","门类型","建筑状态","项目状态"]}],"forbidden":["满足要求","符合要求"]}
+{"id":"ANS_006","question":"按南京地方消防审查口径，新建住宅户门净宽是多少？","expected_can_answer":false,"required_claims":[{"any_of":["未收录","地方标准","无法可靠回答"]}],"forbidden":["南京规定为"]}
+{"id":"ANS_007","question":"地下汽车库设置自动灭火系统后，每个防火分区最大允许建筑面积是多少？","expected_can_answer":true,"required_claims":[{"all_of":["2000㎡","4000㎡"],"standard_id":"GB 50067-2014","article":"5.1.1"}],"forbidden":["只要设置自动灭火系统即可"]}
+{"id":"ANS_008","question":"请完整复述表5.5.18中高层医疗建筑一行的所有疏散宽度要求。","expected_can_answer":false,"known_gap":"表格OCR和列位重建尚未达到可可靠完整复述的标准","required_claims":[{"any_of":["OCR","表格结构","无法完整识别","不能可靠"],"standard_id":"GB 50016-2014","article":"5.5.18"}],"forbidden":["楼梯间的首层疏散门和首层疏散外门1.30m；单面布房疏散走道1.40m；双面布房疏散走道1.50m；疏散楼梯1.30m"]}

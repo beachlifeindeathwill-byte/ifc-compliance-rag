@@ -1,0 +1,70 @@
+{
+  "version": "version_timeline_eval_v1",
+  "updated_at": "2026-08-19",
+  "notes": "该评测集只验证规范版本对比数据和回答锚点，不进入现有 RAG 问答链路。预期中的标准号、条文号和数值均来自 data/policy/standard_timeline.json 及已入库原文。",
+  "cases": [
+    {
+      "id": "VT_001",
+      "question": "新建住宅户门通行净宽不应小于多少？",
+      "expected_topic_id": "residential_entry_door_width",
+      "expected_standard_ids": ["GB 55038-2025", "GB 55037-2022"],
+      "expected_values": ["0.90m", "0.80m"],
+      "must_have": ["新建住宅建筑户门通行净宽不应小于0.90m", "0.80m"],
+      "expect_change": true
+    },
+    {
+      "id": "VT_002",
+      "question": "既有住宅建筑改造户门通行净宽不应小于多少？",
+      "expected_topic_id": "residential_entry_door_width",
+      "expected_standard_ids": ["GB 55038-2025"],
+      "expected_values": ["0.80m"],
+      "must_have": ["既有住宅建筑改造户门通行净宽不应小于0.80m"],
+      "expect_change": false
+    },
+    {
+      "id": "VT_003",
+      "question": "其他汽车库未设置自动灭火系统时，室内任一点至最近人员安全出口的疏散距离不应大于多少？",
+      "expected_topic_id": "garage_egress_distance",
+      "expected_standard_ids": ["GB 55037-2022", "GB 50067-2014"],
+      "expected_values": ["45m"],
+      "must_have": ["未设置自动灭火系统时不应大于45m", "45m"],
+      "expect_change": false
+    },
+    {
+      "id": "VT_004",
+      "question": "单层汽车库无论是否设置自动灭火系统，疏散距离不应大于多少？",
+      "expected_topic_id": "garage_egress_distance",
+      "expected_standard_ids": ["GB 55037-2022"],
+      "expected_values": ["60m"],
+      "must_have": ["单层汽车库、位于建筑首层的汽车库", "60m"],
+      "expect_change": true
+    },
+    {
+      "id": "VT_005",
+      "question": "GB 50067-2014第6.0.6条和GB 55037-2022第7.1.18条对汽车库疏散距离的规定有什么差异？",
+      "expected_topic_id": "garage_egress_distance",
+      "expected_standard_ids": ["GB 50067-2014", "GB 55037-2022"],
+      "expected_values": ["45m", "60m"],
+      "must_have": ["单层汽车库", "位于建筑首层的汽车库", "自动灭火系统"],
+      "expect_change": true
+    },
+    {
+      "id": "VT_006",
+      "question": "建筑高度大于100m的民用建筑楼板耐火极限是多少？新旧规范是否一致？",
+      "expected_topic_id": "high_rise_slab_fire_resistance",
+      "expected_standard_ids": ["GB 50016-2014", "GB 55037-2022"],
+      "expected_values": ["2.00h"],
+      "must_have": ["2.00h", "工业与民用建筑"],
+      "expect_change": false
+    },
+    {
+      "id": "VT_007",
+      "question": "高层医疗建筑疏散楼梯最小净宽，旧版表5.5.18是多少？现行通用规范底线是多少？",
+      "expected_topic_id": "high_rise_public_stair_min_width",
+      "expected_standard_ids": ["GB 50016-2014", "GB 55037-2022"],
+      "expected_values": ["1.30m", "1.20m", "1.10m"],
+      "must_have": ["高层医疗建筑", "1.30m", "1.10m"],
+      "expect_change": true
+    }
+  ]
+}

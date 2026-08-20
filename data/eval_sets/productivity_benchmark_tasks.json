@@ -1,0 +1,41 @@
+{
+  "version": "productivity_benchmark_v1",
+  "measurement_unit": "seconds",
+  "tasks": [
+    {
+      "task_id": "T01",
+      "title": "查找疏散出口门净宽条文",
+      "manual_done_definition": "找到标准、条文号、PDF页码和原文片段。",
+      "assisted_done_definition": "系统回答后，用户核对引用来源并确认可用。",
+      "primary_metric": "code_lookup_time"
+    },
+    {
+      "task_id": "T02",
+      "title": "查找地下汽车库设置自动灭火系统后的疏散距离",
+      "manual_done_definition": "找到适用条文和自动灭火系统条件下的距离限制。",
+      "assisted_done_definition": "系统回答后，用户核对引用来源并确认可用。",
+      "primary_metric": "code_lookup_time"
+    },
+    {
+      "task_id": "T03",
+      "title": "判断门宽审查是否信息充分",
+      "manual_done_definition": "列出建筑类型、门用途、门宽字段和适用条文。",
+      "assisted_done_definition": "系统输出PASS/FAIL/INSUFFICIENT_INFORMATION并列出缺失字段。",
+      "primary_metric": "review_decision_time"
+    },
+    {
+      "task_id": "T04",
+      "title": "从IFC提取楼层、门、楼梯和建筑高度",
+      "manual_done_definition": "人工记录楼层数、门数量、楼梯数量和推算高度。",
+      "assisted_done_definition": "上传IFC后读取模型事实摘要并核对。",
+      "primary_metric": "ifc_fact_extraction_time"
+    },
+    {
+      "task_id": "T05",
+      "title": "整理消防审查草稿",
+      "manual_done_definition": "整理问题、结论、依据、缺失字段和人工复核提示。",
+      "assisted_done_definition": "导出报告或审查档案后完成核对。",
+      "primary_metric": "draft_preparation_time"
+    }
+  ]
+}
