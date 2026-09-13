@@ -62,7 +62,7 @@ for env_file in ENV_FILES:
     load_env_file(env_file)
 IFC_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title="建筑消防规范审查系统 RAG API", version="0.1.0")
+app = FastAPI(title="Building Fire Review API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://127.0.0.1:8507", "http://localhost:8507"],
@@ -290,7 +290,8 @@ def select_turn_evidence(
         if len(selected) < top_k:
             selected = merge_evidence_results(selected, fresh_results + context_results, max_items=top_k)
         return selected
-    # 普通追问通过改写问题继承语义范围；当用户切换审查对象时，历史证据不能排在新证据前面。
+    # Ordinary follow-ups inherit semantic scope through the rewritten query. Old evidence
+    # must not outrank fresh evidence when the user changes the reviewed property.
     return fresh_results[:top_k]
 
 
@@ -496,7 +497,7 @@ def call_deepseek_json(system_prompt: str, payload: dict[str, Any], timeout: int
     base = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstrip("/")
     url = os.getenv("DEEPSEEK_CHAT_URL") or f"{base}/chat/completions"
     body = {
-        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-flash"),
         "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}],
         "temperature": 0,
         "max_tokens": max_tokens,

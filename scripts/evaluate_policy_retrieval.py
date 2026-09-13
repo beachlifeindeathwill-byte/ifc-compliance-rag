@@ -812,7 +812,8 @@ def main() -> None:
                 notes = "；".join(item["policy_notes"])
                 if notes:
                     lines.append(f"  Policy: {notes}")
-                lines.append(f"  {re.sub(r'\\s+', ' ', item['snippet']).strip()}")
+                snippet = re.sub(r"\s+", " ", item["snippet"]).strip()
+                lines.append(f"  {snippet}")
             lines.append("")
 
     (OUT_DIR / "retrieval_eval_v2_policy.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")

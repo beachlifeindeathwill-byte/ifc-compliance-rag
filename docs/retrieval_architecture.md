@@ -23,7 +23,7 @@
 
 当前 `data/vectorstore/faiss.index` 存在，配置为 `embedding_provider=siliconflow`、`embedding_model=BAAI/bge-m3`，共 2330 个 chunk、1024 维向量。
 
-## FAISS 向量库构建命令
+## FAISS 构建命令
 
 ```powershell
 python scripts/build_faiss_vectorstore.py --env-file .env
@@ -77,7 +77,7 @@ python -m uvicorn app.api_server:app --host 127.0.0.1 --port 8010
 - 向量检索适合用户口语化问题，例如“车库要不要喷淋”“疏散门最窄能多宽”。
 - 消防规范问答不能只靠向量相似度，否则容易被其他规范中相似关键词吸走。实际评估中，BM25 主导的混合排序比 1:1 RRF 更稳。
 
-## 重排接口接入方式
+## Rerank API 接法
 
 SiliconFlow 官方 rerank 接口：
 

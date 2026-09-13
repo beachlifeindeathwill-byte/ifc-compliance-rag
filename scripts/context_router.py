@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 
 
 DEFAULT_DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
-DEFAULT_DEEPSEEK_MODEL = "deepseek-chat"
+DEFAULT_DEEPSEEK_MODEL = "deepseek-flash"
 
 
 @dataclass

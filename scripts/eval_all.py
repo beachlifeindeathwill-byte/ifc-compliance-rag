@@ -19,7 +19,7 @@ def load_summary(path: Path) -> dict:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(payload.get("summary"), dict):
         return payload["summary"]
-    # IFC 事实评估的汇总字段位于报告根节点。
+    # IFC fact evaluation stores its summary fields at the report root.
     return {
         key: value
         for key, value in payload.items()
@@ -52,7 +52,7 @@ def write_live_report(report: dict) -> None:
     atomic_write(out_json, json.dumps(report, ensure_ascii=False, indent=2))
 
     lines = [
-        "# 建筑消防规范审查系统 RAG 评估报告",
+        "# Agent Evaluation Report",
         "",
         f"- Status: {report['status']}",
         f"- Started: {report['started_at']}",
@@ -90,7 +90,7 @@ def main() -> None:
     all_steps = [
         {
             "key": "ifc",
-            "label": "IFC 事实解析",
+            "label": "IFC Facts",
             "script": ROOT / "scripts" / "evaluate_ifc_facts.py",
             "out": OUT_DIR / "ifc_fact_eval.json",
             "extra": [],
@@ -104,7 +104,7 @@ def main() -> None:
         },
         {
             "key": "rag",
-            "label": "RAG 聚焦检索",
+            "label": "RAG Focus",
             "script": ROOT / "scripts" / "evaluate_focus_tests.py",
             "out": OUT_DIR / "focus_single_turn_eval.json",
             "extra": ["--env-file", str(args.env_file)] if args.env_file else [],
@@ -118,7 +118,7 @@ def main() -> None:
         },
         {
             "key": "answers",
-            "label": "RAG 回答质量",
+            "label": "RAG Answers",
             "script": ROOT / "scripts" / "evaluate_rag_answers.py",
             "out": OUT_DIR / "rag_answer_eval.json",
             "extra": ["--env-file", str(args.env_file)] if args.env_file else [],

@@ -75,7 +75,7 @@
 7. 已完成：增加通用问题边界层和直接定位入口，识别版本差异、页码定位、条文号定位和表号定位；证据不足时降置信度，不让大模型补写答案。
 8. 已完成：增加多轮追问评估和 UI 连续追问模式；当前是上下文重写，不是长期语义记忆，后续可继续做摘要记忆和用户确认机制。
 
-## v2 规范策略增强补充
+## v2 Policy-Aware 补充
 
 已新增 `data/policy/standard_registry.json` 和 `data/policy/abolished_articles_seed.json`，并通过 `scripts/evaluate_policy_retrieval.py` 生成带规范路由和废止条文提示的评估结果。
 

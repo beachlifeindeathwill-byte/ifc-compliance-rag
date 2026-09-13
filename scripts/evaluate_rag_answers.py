@@ -187,11 +187,11 @@ def main() -> None:
     out_md = OUT_DIR / "rag_answer_eval.md"
     out_json.write_text(json.dumps({"summary": summary, "results": rows}, ensure_ascii=False, indent=2), encoding="utf-8")
     lines = [
-        "# RAG 回答质量评估",
+        "# RAG Answer Evaluation",
         "",
         *[f"- {key}: {value}" for key, value in summary.items()],
         "",
-        "## 用例",
+        "## Cases",
         "",
     ]
     for row in rows:

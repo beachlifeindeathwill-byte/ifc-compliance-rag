@@ -17,8 +17,7 @@ if str(APP_DIR) not in sys.path:
 from build_faiss_vectorstore import load_env_file
 from evaluate_retrieval import is_hit, load_jsonl, snippet
 from hybrid_retrieval import hybrid_search
-from evidence_confidence import confidence_from_results
-from field_extraction import field_recall_status
+from retrieval_app import confidence_from_results, field_recall_status
 from retrieval_policy import infer_route, is_abolished, load_policy
 
 
@@ -359,10 +358,10 @@ def main() -> None:
     out_json.write_text(json.dumps({"summary": summary, "results": rows}, ensure_ascii=False, indent=2), encoding="utf-8")
 
     lines = [
-        "# 聚焦单轮检索评估",
+        "# Focus Single-Turn Evaluation",
         "",
-        f"- 用例数：{summary['cases']}",
-        f"- 可计分用例数：{summary['scored_cases']}",
+        f"- Cases: {summary['cases']}",
+        f"- Scored cases: {summary['scored_cases']}",
         f"- Hit@1: {summary['hit_at_1']}",
         f"- Hit@3: {summary['hit_at_3']}",
         f"- Hit@5: {summary['hit_at_5']}",
@@ -370,16 +369,16 @@ def main() -> None:
         f"- Article@1/@3/@5: {summary['article_at_1']} / {summary['article_at_3']} / {summary['article_at_5']}",
         f"- Precision@1/@3/@5: {summary['precision_at_1']} / {summary['precision_at_3']} / {summary['precision_at_5']}",
         f"- MRR@10: {summary['mrr_at_10']}",
-        f"- 高/中置信可回答比例：{summary['answerable_high_or_medium_rate']}",
-        f"- 字段召回率：{json.dumps(summary['field_recall_rate'], ensure_ascii=False)}",
-        f"- 复合证据覆盖率@5：{summary['composite_evidence_coverage_at_5']} "
-        f"（{summary['composite_evidence_cases']} 个用例）",
+        f"- Answerable high/medium rate: {summary['answerable_high_or_medium_rate']}",
+        f"- Field recall rate: {json.dumps(summary['field_recall_rate'], ensure_ascii=False)}",
+        f"- Composite evidence coverage@5: {summary['composite_evidence_coverage_at_5']} "
+        f"({summary['composite_evidence_cases']} cases)",
         "",
-        "## 失败归因",
+        "## Failure Attribution",
         "",
         *[f"- {name}: {count}" for name, count in attribution_counts.most_common()],
         "",
-        "## 用例",
+        "## Cases",
         "",
     ]
     for row in rows:

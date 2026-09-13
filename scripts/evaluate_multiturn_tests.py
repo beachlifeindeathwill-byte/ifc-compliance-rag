@@ -29,7 +29,7 @@ from conversation_context import (
 from context_router import ContextDecision, route_context_with_llm
 from evaluate_retrieval import is_hit, snippet
 from hybrid_retrieval import hybrid_search
-from evidence_confidence import confidence_from_results
+from retrieval_app import confidence_from_results
 from retrieval_policy import infer_route, load_policy
 
 
@@ -247,18 +247,18 @@ def main() -> None:
     out_json.write_text(json.dumps({"summary": summary, "results": case_rows}, ensure_ascii=False, indent=2), encoding="utf-8")
 
     lines = [
-        "# 多轮检索评估",
+        "# Multi-Turn Retrieval Evaluation",
         "",
-        f"- 版本：`{summary['version']}`",
-        f"- 用例组数：{summary['cases']}",
-        f"- 回合数：{summary['turns']}",
-        f"- 检索断言数：{summary['retrieval_assertions']}",
+        f"- Version: `{summary['version']}`",
+        f"- Cases: {summary['cases']}",
+        f"- Turns: {summary['turns']}",
+        f"- Retrieval assertions: {summary['retrieval_assertions']}",
         f"- Retrieval Hit@5: {summary['retrieval_hit_at_5']}",
-        f"- 行为断言数：{summary['behavior_assertions']}",
-        f"- 行为命中率：{summary['behavior_hit_rate']}",
-        f"- 低置信度回合数：{summary['low_confidence_turns']}",
-        f"- 上下文路由模式：{json.dumps(summary.get('context_router_modes', {}), ensure_ascii=False)}",
-        f"- 上下文路由来源：{json.dumps(summary.get('context_router_sources', {}), ensure_ascii=False)}",
+        f"- Behavior assertions: {summary['behavior_assertions']}",
+        f"- Behavior hit rate: {summary['behavior_hit_rate']}",
+        f"- Low confidence turns: {summary['low_confidence_turns']}",
+        f"- Context router modes: {json.dumps(summary.get('context_router_modes', {}), ensure_ascii=False)}",
+        f"- Context router sources: {json.dumps(summary.get('context_router_sources', {}), ensure_ascii=False)}",
         "",
     ]
     for case in case_rows:
@@ -266,19 +266,19 @@ def main() -> None:
         lines.append(case.get("goal") or "")
         lines.append("")
         for row in case["turns"]:
-            lines.append(f"### 第 {row['round']} 轮")
-            lines.append(f"- 原始问题：{row['question']}")
-            lines.append(f"- 改写问题：{row['rewritten_question']}")
-            lines.append(f"- 改写原因：{'；'.join(row['rewrite_reasons']) or '无'}")
+            lines.append(f"### Round {row['round']}")
+            lines.append(f"- Original: {row['question']}")
+            lines.append(f"- Rewritten: {row['rewritten_question']}")
+            lines.append(f"- Rewrite reasons: {'；'.join(row['rewrite_reasons']) or '无'}")
             decision = row.get("context_decision") or {}
             lines.append(
-                f"- 上下文路由：mode={decision.get('mode')} use_previous={decision.get('use_previous_context')} "
+                f"- Context router: mode={decision.get('mode')} use_previous={decision.get('use_previous_context')} "
                 f"source={decision.get('source')} reason={decision.get('reason')}"
             )
-            lines.append(f"- 预期：{row.get('expected_standard_id')} / {row.get('expected_article')} / {row.get('expected_behavior')}")
-            lines.append(f"- 首次命中排名：{row['first_hit_rank']}")
-            lines.append(f"- 行为命中：{row['behavior_hit']}（{row['behavior_reason']}）")
-            lines.append(f"- 置信度：{row['confidence']['level']} - {row['confidence']['reason']}")
+            lines.append(f"- Expected: {row.get('expected_standard_id')} / {row.get('expected_article')} / {row.get('expected_behavior')}")
+            lines.append(f"- First hit rank: {row['first_hit_rank']}")
+            lines.append(f"- Behavior hit: {row['behavior_hit']} ({row['behavior_reason']})")
+            lines.append(f"- Confidence: {row['confidence']['level']} - {row['confidence']['reason']}")
             for item in row["top_results"]:
                 lines.append(
                     f"  - #{item['rank']} {item['standard_id']} article={item['article_no']} "

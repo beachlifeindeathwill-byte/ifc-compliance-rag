@@ -1,4 +1,4 @@
-# 建筑消防规范审查系统 RAG 评估框架
+# BIM 消防合规 Agent 评估框架
 
 本文档把项目从“聊天 RAG 手动测试”升级为可复现的分层评估。当前已覆盖 IFC 事实层、RAG 检索层、合规判定层、多轮行为和少量回答质量回归；业务提效需要另行通过人工基线对照实验测量，不能由技术指标直接换算。
 
@@ -11,7 +11,7 @@
 | L3 RAG 检索 | 已部分落地 | Hit@1/3/5、Standard@、Article@、Precision@1/3/5、MRR@10、字段召回 | Context Precision、Context Recall、Faithfulness |
 | L4 合规判定 | 已落地 | Verdict Accuracy、Safety False Negative Rate、三类结论覆盖 | Macro-F1、更大规模真实案例 |
 | L5 最终回答 | 基础回归已落地 | 置信度、缺失字段提示、Required Claim Pass、Quality Audit Pass | Faithfulness、Citation Correctness、Answer Relevancy |
-| L6 系统行为 | 已有基础，待升级 | 多轮检索命中、行为断言、边界拒答 | 实体追踪、上下文保持、边界问题处理 |
+| L6 Agent 行为 | 已有基础，待升级 | 多轮检索命中、行为断言、边界拒答 | Entity Tracking、Context Retention、Boundary Success |
 | L7 业务提效 | 待测 | 任务计时方案、提效计算脚本 | 真实用户或模拟用户基线 |
 
 ## 报告口径
@@ -25,7 +25,7 @@
 | 旧测试类别 | 已有资产 | 在六层框架中的位置 |
 | --- | --- | --- |
 | 单轮对话 | `fire_code_natural_scenarios` 简单问题、`fire_code_focus_single_turn`、`fire_code_answer_regression` A | L3 RAG 检索 + L5 回答质量 |
-| 多轮对话 | `fire_code_natural_scenarios` C001-C005、`fire_code_multiturn_cases`、`fire_code_answer_regression` B | L6 系统行为，后续升级为实体追踪和状态切换 |
+| 多轮对话 | `fire_code_natural_scenarios` C001-C005、`fire_code_multiturn_cases`、`fire_code_answer_regression` B | L6 Agent 行为，后续升级为实体追踪和状态切换 |
 | 边界测试 | `fire_code_natural_scenarios` J006-J008/J012、聚焦单轮 boundary、`fire_code_answer_regression` C | L6 边界 + L4 信息不足判定 |
 
 旧的单轮/多轮/边界测试重点验证“用户看到的回答对不对”；新的 IFC、Tool、Compliance、Faithfulness 测试重点回答“如果错了，是解析层、工具层、检索层还是推理层错了”。后续不应删除旧资产，而应把旧场景逐步迁移成新框架中的 case，例如把 J001-J005 迁移到 `compliance_cases.jsonl`，把 C001-C005 升级为带 entity tracking 的多轮场景。

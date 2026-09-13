@@ -31,7 +31,7 @@ from context_router import ContextDecision, route_context_with_llm
 from evaluate_retrieval import is_hit, load_jsonl, snippet
 from field_extraction import field_recall_status
 from hybrid_retrieval import hybrid_search
-from evidence_confidence import confidence_from_results
+from retrieval_app import confidence_from_results
 from retrieval_policy import infer_route, load_policy
 
 
@@ -331,36 +331,36 @@ def build_summary(cases: list[dict], rows: list[dict]) -> dict:
 
 def write_markdown(summary: dict, rows: list[dict], path: Path) -> None:
     lines = [
-        "# 自然场景 RAG 评估",
+        "# Natural Scenario RAG Evaluation",
         "",
         "本报告只评估检索和证据置信度，不把标准答案写入线上检索逻辑。",
         "",
-        "## 汇总",
+        "## Summary",
         "",
-        f"- 用例数：{summary['cases']}",
-        f"- 单轮用例数：{summary['single_turn_cases']}",
-        f"- 多轮场景数 / 回合数：{summary['multi_turn_cases']} / {summary['multi_turn_turns']}",
-        f"- 可计分单轮用例数：{summary['scored_single_turn_cases']}",
+        f"- Cases: {summary['cases']}",
+        f"- Single-turn cases: {summary['single_turn_cases']}",
+        f"- Multi-turn scenarios / turns: {summary['multi_turn_cases']} / {summary['multi_turn_turns']}",
+        f"- Scored single-turn cases: {summary['scored_single_turn_cases']}",
         f"- Hit@1 / Hit@3 / Hit@5: {summary['hit_at_1']} / {summary['hit_at_3']} / {summary['hit_at_5']}",
         f"- Standard@1 / Article@1: {summary['standard_at_1']} / {summary['article_at_1']}",
-        f"- 边界用例通过率：{summary['boundary_pass_rate']}（{summary['boundary_cases']} 个用例）",
-        f"- 多轮重点命中率：{summary['multi_turn_focus_hit_rate']}（{summary['multi_turn_focus_cases']} 个场景）",
-        f"- 多轮可回答比例：{summary['multi_turn_answerable_rate']}",
-        f"- 上下文路由模式：{json.dumps(summary.get('context_router_modes', {}), ensure_ascii=False)}",
-        f"- 上下文路由来源：{json.dumps(summary.get('context_router_sources', {}), ensure_ascii=False)}",
-        f"- 字段召回：{json.dumps(summary['field_recall_rate'], ensure_ascii=False)}",
-        f"- 置信度分布：{json.dumps(summary['single_turn_confidence_distribution'], ensure_ascii=False)}",
+        f"- Boundary pass rate: {summary['boundary_pass_rate']} ({summary['boundary_cases']} cases)",
+        f"- Multi-turn focus hit rate: {summary['multi_turn_focus_hit_rate']} ({summary['multi_turn_focus_cases']} scenarios)",
+        f"- Multi-turn answerable rate: {summary['multi_turn_answerable_rate']}",
+        f"- Context router modes: {json.dumps(summary.get('context_router_modes', {}), ensure_ascii=False)}",
+        f"- Context router sources: {json.dumps(summary.get('context_router_sources', {}), ensure_ascii=False)}",
+        f"- Field recall: {json.dumps(summary['field_recall_rate'], ensure_ascii=False)}",
+        f"- Confidence distribution: {json.dumps(summary['single_turn_confidence_distribution'], ensure_ascii=False)}",
         "",
-        "## 单轮用例",
+        "## Single-Turn Cases",
         "",
     ]
     for row in [item for item in rows if item.get("type") == "single_turn"]:
         lines.append(f"### {row['id']} {row['question']}")
-        lines.append(f"- 预期：{row.get('expected_standard_id')} / {row.get('expected_article')} / {row.get('expected_behavior')}")
-        lines.append(f"- 首次命中 / 标准 / 条文排名：{row['first_hit_rank']} / {row['first_standard_rank']} / {row['first_article_rank']}")
-        lines.append(f"- 边界判定通过：{row['boundary_pass']}")
-        lines.append(f"- 关键词覆盖率：{row['keyword_coverage']['rate']}（{'、'.join(row['keyword_coverage']['hits'])}）")
-        lines.append(f"- 置信度：{row['evidence_confidence']['level']} - {row['evidence_confidence']['reason']}")
+        lines.append(f"- Expected: {row.get('expected_standard_id')} / {row.get('expected_article')} / {row.get('expected_behavior')}")
+        lines.append(f"- First hit / standard / article rank: {row['first_hit_rank']} / {row['first_standard_rank']} / {row['first_article_rank']}")
+        lines.append(f"- Boundary pass: {row['boundary_pass']}")
+        lines.append(f"- Keyword coverage: {row['keyword_coverage']['rate']} ({'、'.join(row['keyword_coverage']['hits'])})")
+        lines.append(f"- Confidence: {row['evidence_confidence']['level']} - {row['evidence_confidence']['reason']}")
         for item in row["top_results"]:
             lines.append(
                 f"  - #{item['rank']} {item['standard_id']} article={item['article_no']} "
@@ -369,25 +369,25 @@ def write_markdown(summary: dict, rows: list[dict], path: Path) -> None:
             lines.append(f"    {item['snippet']}")
         lines.append("")
 
-    lines.extend(["## 多轮用例", ""])
+    lines.extend(["## Multi-Turn Cases", ""])
     for row in [item for item in rows if item.get("type") == "multi_turn"]:
         focus = row["focus_hit"]
         lines.append(f"### {row['id']}")
-        lines.append(f"- 预期重点：{'；'.join(row.get('expected_focus') or [])}")
-        lines.append(f"- 重点命中：{focus['hit']}（standards={focus['expected_standards']}, articles={focus['expected_articles']}）")
-        lines.append(f"- 使用改写的回合数：{row['rewrite_used_turns']}")
-        lines.append(f"- 可回答 / 低置信度回合数：{row['answerable_turns']} / {row['low_confidence_turns']}")
+        lines.append(f"- Expected focus: {'；'.join(row.get('expected_focus') or [])}")
+        lines.append(f"- Focus hit: {focus['hit']} (standards={focus['expected_standards']}, articles={focus['expected_articles']})")
+        lines.append(f"- Rewrite used turns: {row['rewrite_used_turns']}")
+        lines.append(f"- Answerable / low-confidence turns: {row['answerable_turns']} / {row['low_confidence_turns']}")
         for turn in row["turns"]:
-            lines.append(f"  - 第 {turn['round']} 轮：{turn['question']}")
+            lines.append(f"  - Round {turn['round']}: {turn['question']}")
             if turn["rewritten_question"] != turn["question"]:
-                lines.append(f"    改写：{turn['rewritten_question']}")
+                lines.append(f"    Rewritten: {turn['rewritten_question']}")
             if turn.get("context_decision"):
                 decision = turn["context_decision"]
                 lines.append(
-                    f"    上下文路由：mode={decision.get('mode')} use_previous={decision.get('use_previous_context')} "
+                    f"    Context router: mode={decision.get('mode')} use_previous={decision.get('use_previous_context')} "
                     f"source={decision.get('source')} reason={decision.get('reason')}"
                 )
-            lines.append(f"    置信度：{turn['confidence']['level']} - {turn['confidence']['reason']}")
+            lines.append(f"    Confidence: {turn['confidence']['level']} - {turn['confidence']['reason']}")
             if turn["top_results"]:
                 top = turn["top_results"][0]
                 lines.append(f"    Top1: {top['standard_id']} / {top['article_no']} / p{top['page']}")

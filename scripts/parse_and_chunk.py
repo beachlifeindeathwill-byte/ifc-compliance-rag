@@ -466,7 +466,7 @@ def write_audit_files(chunks: list[dict]) -> None:
             f"{'=' * 72}\n"
             f"{chunk['text']}\n"
         )
-        (standard_dir / file_name).write_text(audit_text, encoding="utf-8", newline="\n")
+        (standard_dir / file_name).write_text(audit_text, encoding="utf-8")
 
 
 def main() -> None:

@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 .venv/
+.env
+.DS_Store
 .tmp/
 
 # Node build/runtime
@@ -18,6 +20,8 @@ data/processed_text/
 data/structured_tables/
 data/retrieval_runs/
 data/server_*.log
+data/server_*.err
+data/server_*.out
 
 # Local visual review artifacts
 web/design-qa.md

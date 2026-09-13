@@ -13,7 +13,7 @@ from observability import now_ms, record_llm_usage
 
 
 DEFAULT_DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
-DEFAULT_DEEPSEEK_MODEL = "deepseek-chat"
+DEFAULT_DEEPSEEK_MODEL = "deepseek-flash"
 
 
 class LLMAnswerError(RuntimeError):
@@ -146,6 +146,88 @@ def _extract_json(text: str) -> dict:
     if start >= 0 and end > start:
         cleaned = cleaned[start : end + 1]
     return json.loads(cleaned)
+
+
+def _bounded_int_env(name: str, default: int, minimum: int, maximum: int) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return max(minimum, min(maximum, int(raw)))
+    except ValueError:
+        return default
+
+
+def answer_max_tokens(
+    question: str,
+    candidates: list[dict],
+    *,
+    is_followup: bool = False,
+    is_reference_question: bool = False,
+    compliance_mode: bool = False,
+) -> int:
+    """Choose an output budget based on answer shape and retrieved evidence size."""
+    if compliance_mode:
+        budget = 4500
+    elif is_reference_question or requires_table_mapping(question):
+        budget = 3600
+    elif is_followup:
+        budget = 2200
+    else:
+        budget = 3000
+
+    evidence_chars = sum(len(str(item.get("text") or "")) for item in candidates[:8])
+    if len(candidates) >= 6 or evidence_chars >= 7000:
+        budget = max(budget, 3600)
+    if evidence_chars >= 11000:
+        budget = max(budget, 4500)
+
+    # An exact override is useful for diagnostics; the cap keeps adaptive mode bounded.
+    exact_override = os.getenv("DEEPSEEK_MAX_TOKENS", "").strip()
+    if exact_override:
+        return _bounded_int_env("DEEPSEEK_MAX_TOKENS", budget, 800, 8000)
+    cap = _bounded_int_env("DEEPSEEK_MAX_TOKENS_CAP", 6000, 1200, 8000)
+    return min(budget, cap)
+
+
+def _repair_json_with_llm(
+    content: str,
+    api_key: str,
+    timeout: int = 25,
+    max_tokens: int = 3000,
+) -> dict:
+    """Ask the model to normalize a malformed JSON answer once before failing."""
+    repair_prompt = (
+        "下面是一段建筑规范问答模型返回的近似 JSON。请修复 JSON 语法错误，保留原有字段和值，"
+        "不要添加解释，不要使用 Markdown，只返回一个可以被标准 json.loads 解析的 JSON 对象。\n\n"
+        f"原始内容：\n{content[:12000]}"
+    )
+    payload = {
+        "model": os.getenv("DEEPSEEK_MODEL", DEFAULT_DEEPSEEK_MODEL),
+        "messages": [
+            {
+                "role": "system",
+                "content": "你是严格的 JSON 修复器。输出必须是合法 JSON 对象。",
+            },
+            {"role": "user", "content": repair_prompt},
+        ],
+        "temperature": 0,
+        "max_tokens": max_tokens,
+        "response_format": {"type": "json_object"},
+    }
+    request = urllib.request.Request(
+        _chat_url(),
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        response_body = json.loads(response.read().decode("utf-8"))
+    repaired = response_body["choices"][0]["message"]["content"]
+    return _extract_json(repaired)
 
 
 def normalize_compliance_answer(answer: dict) -> dict:
@@ -281,6 +363,13 @@ JSON 格式：
         f"{' '.join(dialogue_mode)}\n\n"
         f"{answer_shape}\n\n召回证据：\n{_candidate_context(candidates)}"
     )
+    max_tokens = answer_max_tokens(
+        question,
+        candidates,
+        is_followup=is_followup,
+        is_reference_question=is_reference_question,
+        compliance_mode=compliance_mode,
+    )
     payload = {
         "model": os.getenv("DEEPSEEK_MODEL", DEFAULT_DEEPSEEK_MODEL),
         "messages": [
@@ -288,7 +377,7 @@ JSON 格式：
             {"role": "user", "content": user_prompt},
         ],
         "temperature": 0,
-        "max_tokens": 1200,
+        "max_tokens": max_tokens,
         "response_format": {"type": "json_object"},
     }
     request_data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -327,11 +416,32 @@ JSON 格式：
     data = json.loads(body)
     record_llm_usage(data.get("usage"), now_ms() - started)
     content = data["choices"][0]["message"]["content"]
-    parsed = _extract_json(content)
-    certainty = parsed.get("certainty", "low")
+    try:
+        parsed = _extract_json(content)
+    except json.JSONDecodeError as exc:
+        try:
+            parsed = _repair_json_with_llm(
+                content,
+                key,
+                timeout=timeout,
+                max_tokens=max_tokens,
+            )
+        except Exception as repair_exc:
+            raise LLMAnswerError(
+                f"模型返回的 JSON 格式无效，自动修复也失败：{repair_exc}"
+            ) from exc
+    if not isinstance(parsed, dict):
+        raise LLMAnswerError("模型返回的 JSON 顶层不是对象")
+    certainty = str(parsed.get("certainty") or "low").strip().lower()
     if certainty not in {"high", "medium", "low"}:
-        parsed["certainty"] = "low"
+        certainty = "low"
         parsed["note"] = "模型返回的置信度字段异常，已降级为低置信度。"
+    parsed["certainty"] = certainty
+    if not isinstance(parsed.get("conclusion"), str) or not parsed["conclusion"].strip():
+        parsed["conclusion"] = "模型返回结构不完整，当前证据无法形成可靠结论。"
+        parsed["certainty"] = "low"
+    if not isinstance(parsed.get("basis"), str):
+        parsed["basis"] = "模型未返回完整的证据依据。"
     citations = parsed.get("citations")
     if not isinstance(citations, list):
         parsed["citations"] = []
