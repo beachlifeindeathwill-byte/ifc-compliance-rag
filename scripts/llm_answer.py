@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
 import time
 import urllib.error
 import urllib.request
+
+from json_repair import repair_json
 
 from answer_consistency import apply_answer_consistency_guard
 from deterministic_compliance import apply_numeric_compliance_guard
@@ -145,7 +148,42 @@ def _extract_json(text: str) -> dict:
     end = cleaned.rfind("}")
     if start >= 0 and end > start:
         cleaned = cleaned[start : end + 1]
-    return json.loads(cleaned)
+    try:
+        parsed = json.loads(cleaned)
+    except json.JSONDecodeError as json_error:
+        # 部分模型会返回 Python 风格引号、末尾多逗号或缺少分隔符的 JSON。
+        # 优先严格解析，再进行字面量和结构修复；始终不执行模型返回内容。
+        try:
+            parsed = ast.literal_eval(cleaned)
+        except (SyntaxError, ValueError):
+            compact = re.sub(r",\s*([}\]])", r"\1", cleaned)
+            try:
+                parsed = json.loads(compact)
+            except json.JSONDecodeError:
+                try:
+                    parsed = json.loads(repair_json(cleaned))
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    raise json_error
+    if not isinstance(parsed, dict):
+        raise ValueError("模型返回的内容不是JSON对象")
+    return parsed
+
+
+def _format_fallback_answer() -> dict:
+    return {
+        "can_answer": False,
+        "conclusion": "模型返回格式异常，当前无法可靠生成回答。",
+        "basis": "本轮模型输出未通过结构化格式校验。",
+        "certainty": "low",
+        "confidence_reason": "模型输出格式异常，系统未采用未经校验的内容。",
+        "missing_fields": [],
+        "citations": [],
+        "note": "请重试；系统不会将格式异常的模型输出直接作为审查结论。",
+        "verdict": "INSUFFICIENT_INFORMATION",
+        "compliance_reasons": [],
+        "critical_risk": False,
+        "atomic_claims": [],
+    }
 
 
 def _bounded_int_env(name: str, default: int, minimum: int, maximum: int) -> int:
@@ -418,7 +456,7 @@ JSON 格式：
     content = data["choices"][0]["message"]["content"]
     try:
         parsed = _extract_json(content)
-    except json.JSONDecodeError as exc:
+    except (json.JSONDecodeError, ValueError, SyntaxError):
         try:
             parsed = _repair_json_with_llm(
                 content,
@@ -426,12 +464,10 @@ JSON 格式：
                 timeout=timeout,
                 max_tokens=max_tokens,
             )
-        except Exception as repair_exc:
-            raise LLMAnswerError(
-                f"模型返回的 JSON 格式无效，自动修复也失败：{repair_exc}"
-            ) from exc
+        except Exception:
+            return _format_fallback_answer()
     if not isinstance(parsed, dict):
-        raise LLMAnswerError("模型返回的 JSON 顶层不是对象")
+        return _format_fallback_answer()
     certainty = str(parsed.get("certainty") or "low").strip().lower()
     if certainty not in {"high", "medium", "low"}:
         certainty = "low"

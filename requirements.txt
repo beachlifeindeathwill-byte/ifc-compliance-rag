@@ -7,4 +7,5 @@ faiss-cpu
 ifcopenshell
 pdfplumber
 pypdf
+json-repair
 streamlit
