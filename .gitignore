@@ -8,7 +8,8 @@ __pycache__/
 # Node build/runtime
 web/node_modules/
 web/dist/
-web/.openai/
+web/.openai/*
+!web/.openai/hosting.json
 
 # Large or regenerable knowledge assets
 data/vectorstore/
